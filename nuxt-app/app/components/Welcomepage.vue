@@ -52,7 +52,9 @@
 </template>
 
 <script setup>
-const API = 'http://localhost:8080'
+const API = import.meta.dev
+  ? 'http://localhost:8080'
+  : 'https://qr-code-be-l95m.onrender.com'
 
 const isOpen = ref(false)
 const url = ref('')
@@ -83,7 +85,6 @@ function generate() {
         return
     }
 
-    // encodeURIComponent keeps characters like ? & # in your URL from breaking the request
     qrSrc.value = `${API}/api/qrcode/qr?url=${encodeURIComponent(value)}&size=300`
 }
 
@@ -91,6 +92,17 @@ function onError() {
     qrSrc.value = ''
     error.value = 'Could not generate the QR code. Is the backend running?'
 }
+
+const sendPing = async () => {
+    try {
+        const response = await fetch('https://qr-code-be-l95m.onrender.com/')
+        if (!response.ok) throw new Error('Ping failed')
+        console.log('Ping successful')
+    } catch (err) {
+        console.error('Ping error:', err)
+    }
+}
+sendPing();
 </script>
 
 <style>
@@ -101,7 +113,6 @@ function onError() {
 body {
     margin: 0;
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-    margin: 0;
     background-image: url('/bg.jpg');
     background-size: cover;
     background-position: center;
@@ -250,7 +261,7 @@ body {
         right: 0;
         flex-direction: column;
         gap: 0;
-        background-color: #c6c2c2;
+        background-color: #7d7a7ad8;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
