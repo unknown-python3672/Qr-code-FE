@@ -45,7 +45,7 @@
 
             <div v-if="qrSrc" class="result">
                 <img :src="qrSrc" alt="QR code" width="300" height="300" @error="onError" />
-                <a :href="downloadHref" class="download">Download PNG</a>
+                <a :href="downloadHref" style="color: white;" class="download">Download PNG</a>
             </div>
         </main>
     </div>
