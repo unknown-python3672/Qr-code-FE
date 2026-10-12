@@ -1,34 +1,115 @@
 <template>
-    <nav class="navbar">
-        <h1>Qr code Generator</h1>
+    <div>
+        <nav class="navbar">
+            <a href="#" class="brand">Qr code Generator</a>
 
-        <button
-            class="hamburger"
-            :class="{ open: isOpen }"
-            aria-label="Toggle menu"
-            :aria-expanded="isOpen"
-            @click="isOpen = !isOpen"
-        >
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+            <button
+                class="hamburger"
+                :class="{ open: isOpen }"
+                aria-label="Toggle menu"
+                :aria-expanded="isOpen"
+                @click="isOpen = !isOpen"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-        <ul class="nav-links" :class="{ open: isOpen }">
-            <li><a href="#" @click="isOpen = false">About Us</a></li>
-            <li><a href="#" @click="isOpen = false">Contact ME</a></li>
-        </ul>
-    </nav>
+            <ul class="nav-links" :class="{ open: isOpen }">
+                <li><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">About Us</a></li>
+                <li><a
+  href="https://github.com/unknown-python3672"
+  target="_blank"
+  rel="noopener noreferrer"
+>Contact ME</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <h1>Welcome to the QR Code Generator</h1>
+            <p>Generate a QR code in seconds for any URL of your choice</p>
+
+            <form class="qr-form" @submit.prevent="generate">
+                <input
+                    v-model="url"
+                    class="url-input"
+                    type="text"
+                    inputmode="url"
+                    placeholder="Enter the URL"
+                    aria-label="URL to encode"
+                />
+                <button type="submit" class="generate-btn">GENERATE</button>
+            </form>
+
+            <p v-if="error" class="error" role="alert">{{ error }}</p>
+
+            <div v-if="qrSrc" class="result">
+                <img :src="qrSrc" alt="QR code" width="300" height="300" @error="onError" />
+                <a :href="downloadHref" class="download">Download PNG</a>
+            </div>
+        </main>
+    </div>
 </template>
 
 <script setup>
+const API = 'http://localhost:8080'
+
 const isOpen = ref(false)
+const url = ref('')
+const qrSrc = ref('')
+const error = ref('')
+
+const downloadHref = computed(() => `${qrSrc.value}&download=true`)
+
+function normalizeUrl(input) {
+    const value = input.trim()
+    if (!value) return null
+
+    const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`
+    try {
+        return new URL(withScheme).href
+    } catch {
+        return null
+    }
+}
+
+function generate() {
+    error.value = ''
+    const value = normalizeUrl(url.value)
+
+    if (!value) {
+        qrSrc.value = ''
+        error.value = 'Please enter a valid URL, e.g. https://example.com'
+        return
+    }
+
+    // encodeURIComponent keeps characters like ? & # in your URL from breaking the request
+    qrSrc.value = `${API}/api/qrcode/qr?url=${encodeURIComponent(value)}&size=300`
+}
+
+function onError() {
+    qrSrc.value = ''
+    error.value = 'Could not generate the QR code. Is the backend running?'
+}
 </script>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    margin: 0;
+    background-image: url('/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
 }
+
 </style>
 
 <style scoped>
@@ -40,13 +121,15 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: #c6c2c2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #c6c2c20c;
+    border-bottom: 1px solid #cccccc67;
 }
 
-.navbar h1 {
-    margin: 0;
+.brand {
     font-size: 1.4rem;
+    font-weight: bold;
+    color: inherit;
+    text-decoration: none;
 }
 
 .nav-links {
@@ -64,6 +147,65 @@ body {
 
 .hamburger {
     display: none;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.qr-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+}
+
+.url-input {
+    width: 100%;
+    height: 40px;
+    margin-top: 20px;
+    padding: 5px 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.generate-btn {
+    width: 100%;
+    max-width: 200px;
+    margin-top: 15px;
+    padding: 14px;
+    border: 1px solid black;
+    border-radius: 10px;
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.error {
+    margin-top: 15px;
+    color: crimson;
+}
+
+.result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.result img {
+    max-width: 100%;
+    height: auto;
+}
+
+.download {
+    color: black;
 }
 
 @media (max-width: 768px) {
